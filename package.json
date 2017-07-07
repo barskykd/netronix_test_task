@@ -1,0 +1,23 @@
+{
+  "name": "netronix",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "webpack",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "",
+  "dependencies": {
+    "@types/react": "^15.0.35",
+    "@types/react-dom": "^15.5.1",
+    "babel-polyfill": "^6.23.0",
+    "moment": "^2.18.1",
+    "react": "^15.6.1",
+    "react-dom": "^15.6.1",
+    "ts-loader": "^2.2.2",
+    "typescript": "^2.4.1",
+    "webpack": "^3.1.0"
+  }
+}

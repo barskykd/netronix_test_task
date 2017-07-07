@@ -1,0 +1,13 @@
+{
+    "compileOnSave": true,
+    "compilerOptions": {
+        "target": "es5",
+        "module": "commonjs",
+        "sourceMap": true,
+        "strictNullChecks": true,
+        "jsx": "react",
+        "noImplicitAny": true,
+        "lib": ["dom","es6","dom","scripthost"],
+        "outDir": "ts-build"        
+    }
+}

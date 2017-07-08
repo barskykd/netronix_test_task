@@ -33,16 +33,12 @@ function min_and_max(a: number[]) {
 }
 
 export default class SensorGraphView extends React.Component<SensorGraphViewProps> {
-    private svg: SVGElement | null; 
-    private style: any;   
+    private graphDiv: HTMLDivElement;
+    private svg: SVGSVGElement;     
 
     constructor(props: SensorGraphViewProps) {
         super(props);
-        this.onSensorData = _.throttle(this.onSensorData.bind(this), 100);
-        this.style = {width: '900px', 
-                      height: '500px', 
-                      display:'inline-block'
-                    }; 
+        this.onSensorData = _.throttle(this.onSensorData.bind(this), 100);       
     }    
     
     onSensorData() {
@@ -71,10 +67,18 @@ export default class SensorGraphView extends React.Component<SensorGraphViewProp
             return;
         }
 
+        let divWidth = this.graphDiv.offsetWidth;
+        let divHeight = this.graphDiv.offsetHeight;
+        let svgWidth = divWidth;
+        let svgHeight = divHeight - 50;        
+
         var svg = d3.select(this.svg);
+        svg.attr('width', svgWidth)
+            .attr('height', svgHeight);
+
         let margin = {top: 20, right: 20, bottom: 30, left: 50};
-        let width = svg.attr("width") - margin.left - margin.right;
-        let height = svg.attr("height") - margin.top - margin.bottom; 
+        let width = svgWidth - margin.left - margin.right;
+        let height = svgHeight - margin.top - margin.bottom; 
         svg.selectAll('g').remove();       
         let g = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
@@ -119,13 +123,13 @@ export default class SensorGraphView extends React.Component<SensorGraphViewProp
 
     public render():JSX.Element {
         
-        return <div 
-            style={this.style}
+        return <div className="sensor-graph-view"            
+            ref={d => {if (d) {this.graphDiv = d}}}
             >
-            <p>{this.props.sensorName}</p>
-            <svg width={parseInt(this.style.width, 10)}
-                 height={parseInt(this.style.height, 10)}
-                 ref={s => this.svg = s}/>
+            <p className="sensor-graph-view_header">{this.props.sensorName}</p>
+            <svg width='100%'
+                 height='100%'
+                 ref={s => {if (s) {this.svg = s}} }/>
             </div>
     }
 

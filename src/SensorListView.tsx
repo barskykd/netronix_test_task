@@ -25,7 +25,12 @@ export default class SensorListView extends React.Component<SensorListViewProps>
     }
     
     render(): JSX.Element {
-        return <table>
+        return <div className="sensor-list-view"><table className="sensor-list-view_table">
+            <thead><tr>
+                <td>Sensor</td>
+                <td>Last Changed</td>
+                <td>Last Value</td>
+                </tr></thead>
             <tbody>
                 {this.props.sensorData.getSensorNames().map(sensorName => {
                         let lastValue = this.props.sensorData.getLastValues(sensorName, 1)[0];
@@ -45,5 +50,6 @@ export default class SensorListView extends React.Component<SensorListViewProps>
                 )}
             </tbody>
         </table>
+        </div>
     }
 }

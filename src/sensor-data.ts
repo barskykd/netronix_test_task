@@ -80,13 +80,7 @@ export default class SensorData {
             if (!this.dataBySensor[d.name]) {
                 this.dataBySensor[d.name] = [];
             }            
-            updatedSensors.push(d.name);
-
-            let old_count = this.dataBySensor[d.name].length;            
-            let old_first_t = null;
-            if (old_count) {
-                old_first_t = this.dataBySensor[d.name][0].t;
-            }
+            updatedSensors.push(d.name);            
 
             for (let m of d.measurements) {
                 let time = m[0]*1000;
@@ -105,18 +99,7 @@ export default class SensorData {
                     if (datum.min === null || datum.min === undefined || datum.min < v) {
                         datum.min = v;
                     }
-                } 
-
-                let new_count = this.dataBySensor[d.name].length;
-                let new_first_t = null;
-                if (new_count) {
-                    new_first_t = this.dataBySensor[d.name][0].t;
-                }
-                console.assert(old_count <= new_count);
-                console.log(d.name, old_count, new_count);
-                if (new_first_t && old_first_t) {                
-                    console.assert(new_first_t <= old_first_t);
-                }               
+                }                           
             }            
         }        
         this.sensorNames = Object.keys(this.dataBySensor).sort();

@@ -41,8 +41,10 @@ export default class SensorMapView extends React.Component<SensorMapViewProps> {
 
     public render():JSX.Element {
         return <div 
-            style={{width: '900px', height: '500px'}}
-            ref={d => this.mapDiv = d}></div>
+            className='sensor-map-view'>
+            <p className='sensor-map-view_header'>{this.props.sensorName}</p>            
+            <div className='sensor-map-view_map' ref={d => this.mapDiv = d}></div>            
+        </div>
     }
 
     updateMap() {

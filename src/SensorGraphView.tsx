@@ -59,11 +59,12 @@ export default class SensorGraphView extends React.Component<SensorGraphViewProp
 
     draw() {
         var data: {d:Date, v: number}[] = [];//[['Time', 'Value']]
-        for (let d of this.props.sensorData.getLastValues(this.props.sensorName, 1000)) {
-            let mm = min_and_max(d.values);
-            let avgValue: number = avg(d.values);
-            let date = new Date(parseInt(d.time, 10));
-            data.push({d:date, v:avgValue});
+        var sensorData = this.props.sensorData.getLastValues(this.props.sensorName, 1000);
+        for (let d of sensorData) {            
+            let date = new Date(d.t);
+            if (d.avg !== null && d.avg !== undefined) {
+                data.push({d:date, v:d.avg});
+            }            
         }
 
         if (data.length < 2) {
@@ -79,10 +80,12 @@ export default class SensorGraphView extends React.Component<SensorGraphViewProp
 
         let x = d3.scaleTime()
                 .rangeRound([0, width])
-                .domain(d3.extent(data, (d:any) => d.d));
+                .domain(d3.extent(data, (d:any) => d.d))
+                .nice();
         let y = d3.scaleLinear()
                 .rangeRound([height, 0])
-                .domain(d3.extent(data, (d:any) => d.v));
+                .domain(d3.extent(data, (d:any) => d.v))
+                .nice();
         let line = d3.line()
                 .x((d:any) => x(d.d))
                 .y((d:any) => y(d.v));

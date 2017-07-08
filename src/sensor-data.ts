@@ -1,25 +1,52 @@
+type Datum<T> = {
+    t: number,
+    v: T[],
+    sum?: number | null    
+    avg?: number | null,    
+    last?: T,
+    min?: T,
+    max?: T,
+}
+
+function findOrCreateDatum<T>(data: Datum<T>[], t: number) {
+    for (let idx = data.length-1; idx >= 0; --idx) {
+        if (data[idx].t == t) {
+            return {
+                idx,
+                datum: data[idx],
+                data
+            };
+        }
+        if (data[idx].t < t) {
+            let newDatum: Datum<T> = {t, v: []};
+            let newData = [...data.slice(0, idx+1), newDatum, ...data.slice(idx+1)];
+            return {
+                idx, 
+                datum: newDatum,
+                data: newData
+            }
+        }
+    }
+    let newDatum: Datum<T> = {t, v: []};
+    let newData = [newDatum, ...data];
+    return {
+        idx:newData.length - 1, 
+        datum: newDatum,
+        data: newData
+    }
+}
+
 
 type DataBySensorName = {
-        [key:string]: {
-            [key:string]: any[]
-        };
-    }
-
-function compareNumbers(as:string, bs:string) {
-    let a = parseInt(as, 10);
-    let b = parseInt(bs, 10);
-    if (a < b) return -1;
-    else if (a == b) return 0;
-    else return 1;
-}    
-
+    [key:string]: Datum<any>[];
+}
 
 
 export default class SensorData {
     eventSource: any;
     private dataBySensor: DataBySensorName = {}
     private sensorNames: string[] = [];
-    private listeners: (()=>void)[] = [];
+    private listeners: ((sensorNames: string[])=>void)[] = [];
 
     constructor(private url: string) {
         this.eventSource = new window.EventSource(url);
@@ -30,13 +57,12 @@ export default class SensorData {
         return this.sensorNames;
     }
 
-    public getLastValues(sensorName: string, count: number): {time: string, values:any[]}[] {
+    public getLastValues(sensorName: string, count: number): Datum<any>[] {
         let values = this.dataBySensor[sensorName] || [];
-        let times = Object.keys(values).sort(compareNumbers);
-        if (times.length > count) {
-            times = times.slice(times.length - count);
+        if (values.length > count) {
+            return values.slice(values.length - count);
         }
-        return times.map(t => ({time: t, values: values[t]}))
+        return [...values];        
     }
 
     public addListener(f: ()=>void) {
@@ -48,24 +74,54 @@ export default class SensorData {
     }
 
     private onevent(e: any) {
-        let data = JSON.parse(e.data);                
+        let data = JSON.parse(e.data);       
+        let updatedSensors: string[] = [];         
         for (let d of data) {
             if (!this.dataBySensor[d.name]) {
-                this.dataBySensor[d.name] = {};
+                this.dataBySensor[d.name] = [];
+            }            
+            updatedSensors.push(d.name);
+
+            let old_count = this.dataBySensor[d.name].length;            
+            let old_first_t = null;
+            if (old_count) {
+                old_first_t = this.dataBySensor[d.name][0].t;
             }
-            let values = this.dataBySensor[d.name];
 
             for (let m of d.measurements) {
-                let time = ''+m[0]*1000;
-                if (!values[time]) {
-                    values[time] = [];
+                let time = m[0]*1000;
+                let v = m[1];
+                let values = this.dataBySensor[d.name];   
+                let {idx, datum, data:newData} = findOrCreateDatum(values, time);
+                this.dataBySensor[d.name] = newData;
+                datum.v.push(v);
+                datum.last = v;
+                if (typeof(v) == 'number') {
+                    datum.sum = (datum.sum || 0) + v;
+                    datum.avg = datum.sum / datum.v.length;
+                    if (datum.max === null || datum.max === undefined || datum.max < v) {
+                        datum.max = v;
+                    }
+                    if (datum.min === null || datum.min === undefined || datum.min < v) {
+                        datum.min = v;
+                    }
+                } 
+
+                let new_count = this.dataBySensor[d.name].length;
+                let new_first_t = null;
+                if (new_count) {
+                    new_first_t = this.dataBySensor[d.name][0].t;
                 }
-                values[time].push(m[1]);                
-            }
+                console.assert(old_count <= new_count);
+                console.log(d.name, old_count, new_count);
+                if (new_first_t && old_first_t) {                
+                    console.assert(new_first_t <= old_first_t);
+                }               
+            }            
         }        
         this.sensorNames = Object.keys(this.dataBySensor).sort();
         for (let listener of this.listeners) {
-            listener();
+            listener(updatedSensors);
         }
     }
 }

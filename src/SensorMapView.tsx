@@ -15,7 +15,7 @@ export default class SensorMapView extends React.Component<SensorMapViewProps> {
     private polyline: any = null;
     constructor(props: SensorMapViewProps) {
         super(props);
-        this.onSensorData = _.throttle(this.onSensorData.bind(this), 100);
+        this.onSensorData = _.throttle(this.onSensorData.bind(this), 300);
     }   
 
     attachGoogleMaps() {
@@ -54,8 +54,8 @@ export default class SensorMapView extends React.Component<SensorMapViewProps> {
             return;
         }
         
-        let lastPoints = data[data.length-1].values;
-        let lp = lastPoints[lastPoints.length-1];
+        let lastDatum = data[data.length-1];
+        let lp = lastDatum.last;
 
         let center = {lat: lp[0], lng: lp[1]};
 
@@ -78,7 +78,7 @@ export default class SensorMapView extends React.Component<SensorMapViewProps> {
 
         var path = []
         for (let lps of data) {
-            let lp = lps.values[lps.values.length-1];
+            let lp = lps.last;
             path.push({lat: lp[0], lng: lp[1]});
         }
 

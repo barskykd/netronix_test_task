@@ -28,12 +28,18 @@ export default class SensorListView extends React.Component<SensorListViewProps>
         return <table>
             <tbody>
                 {this.props.sensorData.getSensorNames().map(sensorName => {
-                        let lastValues = this.props.sensorData.getLastValues(sensorName, 1)[0] || {time: null, values:[0]};
+                        let lastValue = this.props.sensorData.getLastValues(sensorName, 1)[0];
+                        let time = '';
+                        let value = '';
+                        if (lastValue !== undefined) {
+                            time = Moment(new Date(lastValue.t)).format('lll');
+                            value = '' + lastValue.last;
+                        }
 
                         return <tr key={sensorName}>
                             <td>{sensorName}</td>
-                            <td>{Moment(new Date(parseInt(lastValues.time, 10))).fromNow()}</td>
-                            <td>{"" + lastValues.values[lastValues.values.length-1]}</td>
+                            <td>{time}</td>
+                            <td>{value}</td>
                         </tr>
                     }
                 )}

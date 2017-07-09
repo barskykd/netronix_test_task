@@ -35,6 +35,7 @@ function min_and_max(a: number[]) {
 export default class SensorGraphView extends React.Component<SensorGraphViewProps> {
     private graphDiv: HTMLDivElement;
     private svg: SVGSVGElement;     
+    private unitSpan: HTMLSpanElement;
 
     constructor(props: SensorGraphViewProps) {
         super(props);
@@ -56,6 +57,9 @@ export default class SensorGraphView extends React.Component<SensorGraphViewProp
     draw() {
         var data: {d:Date, v: number}[] = [];//[['Time', 'Value']]
         var sensorData = this.props.sensorData.getLastValues(this.props.sensorName, 1000);
+        var unit = this.props.sensorData.getUnit(this.props.sensorName);        
+        this.unitSpan.innerText = unit ? (', ' + unit) : '';
+        
         for (let d of sensorData) {            
             let date = new Date(d.t);
             if (d.avg !== null && d.avg !== undefined) {
@@ -126,7 +130,7 @@ export default class SensorGraphView extends React.Component<SensorGraphViewProp
         return <div className="sensor-graph-view"            
             ref={d => {if (d) {this.graphDiv = d}}}
             >
-            <p className="sensor-graph-view_header">{this.props.sensorName}</p>
+            <p className="sensor-graph-view_header">{this.props.sensorName}<span ref={s => {if (s) {this.unitSpan = s;}}}></span></p>
             <svg width='100%'
                  height='100%'
                  ref={s => {if (s) {this.svg = s}} }/>

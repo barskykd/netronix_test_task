@@ -44,6 +44,7 @@ type DataBySensorName = {
 
 export default class SensorData {
     eventSource: any;
+    private unitsBySensor: {[key:string]:string} = {};
     private dataBySensor: DataBySensorName = {}
     private sensorNames: string[] = [];
     private listeners: ((sensorNames: string[])=>void)[] = [];
@@ -55,6 +56,10 @@ export default class SensorData {
 
     public getSensorNames(): string[] {
         return this.sensorNames;
+    }
+
+    public getUnit(sensorName: string): string {
+        return this.unitsBySensor[sensorName] || "";
     }
 
     public getLastValues(sensorName: string, count: number): Datum<any>[] {
@@ -80,6 +85,7 @@ export default class SensorData {
             if (!this.dataBySensor[d.name]) {
                 this.dataBySensor[d.name] = [];
             }            
+            this.unitsBySensor[d.name] = d.unit || "";
             updatedSensors.push(d.name);            
 
             for (let m of d.measurements) {

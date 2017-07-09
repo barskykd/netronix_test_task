@@ -39,6 +39,10 @@ export default class SensorListView extends React.Component<SensorListViewProps>
                         if (lastValue !== undefined) {
                             time = Moment(new Date(lastValue.t)).format('lll');
                             value = '' + lastValue.last;
+                            let unit = this.props.sensorData.getUnit(sensorName);
+                            if (unit) {
+                                value += ', ' + unit;
+                            }
                         }
 
                         return <tr key={sensorName}>

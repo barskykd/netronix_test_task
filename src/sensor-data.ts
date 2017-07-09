@@ -43,15 +43,17 @@ type DataBySensorName = {
 
 
 export default class SensorData {
-    eventSource: any;
+    eventSource?: any;
     private unitsBySensor: {[key:string]:string} = {};
     private dataBySensor: DataBySensorName = {}
     private sensorNames: string[] = [];
     private listeners: ((sensorNames: string[])=>void)[] = [];
 
-    constructor(private url: string) {
-        this.eventSource = new window.EventSource(url);
-        this.eventSource.onmessage = this.onevent.bind(this);
+    constructor(private url?: string) {
+        if (url) {
+            this.eventSource = new window.EventSource(url);
+            this.eventSource.onmessage = this.onevent.bind(this);
+        }
     }
 
     public getSensorNames(): string[] {
@@ -78,7 +80,7 @@ export default class SensorData {
         this.listeners = this.listeners.filter(x => x!==f);
     }
 
-    private onevent(e: any) {
+    public onevent(e: any) {
         let data = JSON.parse(e.data);       
         let updatedSensors: string[] = [];         
         for (let d of data) {
@@ -102,7 +104,7 @@ export default class SensorData {
                     if (datum.max === null || datum.max === undefined || datum.max < v) {
                         datum.max = v;
                     }
-                    if (datum.min === null || datum.min === undefined || datum.min < v) {
+                    if (datum.min === null || datum.min === undefined || datum.min > v) {
                         datum.min = v;
                     }
                 }                           

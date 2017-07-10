@@ -4,6 +4,7 @@ import { expect } from 'chai';
 const TEST_SENSOR1_NAME = 'Sensor1';
 const TEST_SENSOR1_UNIT = 'test_unit';
 const TEST_SENSOR1_MEASUREMENT_TIME = Math.round(new Date().valueOf() / 1000);
+const TEST_SENSOR1_MEASUREMENT_TIME2 = Math.round(new Date().valueOf() / 1000 - 50);
 const TEST_MEASUREMENT = [{
             name: TEST_SENSOR1_NAME,
             unit: TEST_SENSOR1_UNIT,
@@ -15,7 +16,12 @@ const TEST_MEASUREMENT2 = [...TEST_MEASUREMENT,
         unit: TEST_SENSOR1_UNIT,
         measurements: [[TEST_SENSOR1_MEASUREMENT_TIME, 200]]
     }
-]        
+]  
+const TEST_MEASUREMENT3 = [...TEST_MEASUREMENT2, {
+    name: TEST_SENSOR1_NAME,
+        unit: TEST_SENSOR1_UNIT,
+        measurements: [[TEST_SENSOR1_MEASUREMENT_TIME2, 300]]
+}]      
 
 describe('SensorData', () => {
     it ('should call listeners', () => {
@@ -32,7 +38,7 @@ describe('SensorData', () => {
         expect(timesListenerCalled).to.equal(2);
     })
 
-    it('shoult return correct sensor names and units', ()=> {
+    it('should return correct sensor names and units', ()=> {
         let sd = new SensorData();        
         sd.onevent({
             data: JSON.stringify(TEST_MEASUREMENT)
@@ -105,4 +111,35 @@ describe('SensorData', () => {
             avg: 150
         });
     });
+
+    it ('should return data sorted by time', () => {
+        let sd =new SensorData();
+        sd.onevent({
+            data: JSON.stringify(TEST_MEASUREMENT3)
+        })
+        let lastValues = sd.getLastValues(TEST_SENSOR1_NAME, 10);
+        let datum1 = lastValues[0];
+        let datum2 = lastValues[1];                
+        expect(lastValues).to.have.lengthOf(2);   
+
+        expect(datum1.v).to.be.a('array').that.have.lengthOf(1)
+            .and.eqls([300]);        
+        expect(datum1).to.include({
+            t: TEST_SENSOR1_MEASUREMENT_TIME2 * 1000,
+            last: 300,
+            max: 300,
+            min: 300,
+            avg: 300
+        });
+
+        expect(datum2.v).to.be.a('array').that.have.lengthOf(2)
+            .and.eqls([100, 200]);        
+        expect(datum2).to.include({
+            t: TEST_SENSOR1_MEASUREMENT_TIME * 1000,
+            last: 200,
+            max: 200,
+            min: 100,
+            avg: 150
+        });
+    })
 });

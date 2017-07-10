@@ -8,33 +8,18 @@ type SensorGraphViewProps = {
     sensorName: string
 }
 
-function avg(a: number[]) {
-    if (a.length == 0) {
-        return 0;
-    }
-    return a.reduce((pv, cv) => pv + cv, 0) / a.length;
-}
-
-function min_and_max(a: number[]) {
-    if (a.length == 0) {
-        return {min:0, max:0};
-    }
-    let min = a[0];
-    let max = a[0];
-    for (let x of a) {
-        if (min > x) {
-            min = x;
-        }
-        if (max < x) {
-            max = x;
-        }
-    }
-    return {min, max};
-}
-
+/**
+ * Component for displaing measurements in line graph form.
+ * Displays last 1000 of average values;
+ */
 export default class SensorGraphView extends React.Component<SensorGraphViewProps> {
+    // element of SensorGraphView
     private graphDiv: HTMLDivElement;
-    private svg: SVGSVGElement;     
+
+    // element for graph
+    private svg: SVGSVGElement;    
+
+    // element for displaying measurement units 
     private unitSpan: HTMLSpanElement;
 
     constructor(props: SensorGraphViewProps) {
@@ -54,11 +39,16 @@ export default class SensorGraphView extends React.Component<SensorGraphViewProp
         this.props.sensorData.removeListener(this.onSensorData);
     }
 
-    draw() {
-        var data: {d:Date, v: number}[] = [];//[['Time', 'Value']]
-        var sensorData = this.props.sensorData.getLastValues(this.props.sensorName, 1000);
+    updateUnits() {
         var unit = this.props.sensorData.getUnit(this.props.sensorName);        
         this.unitSpan.innerText = unit ? (', ' + unit) : '';
+    }
+
+    draw() {
+        this.updateUnits();
+        var data: {d:Date, v: number}[] = [];
+        var sensorData = this.props.sensorData.getLastValues(this.props.sensorName, 1000);
+        
         
         for (let d of sensorData) {            
             let date = new Date(d.t);
@@ -68,6 +58,7 @@ export default class SensorGraphView extends React.Component<SensorGraphViewProp
         }
 
         if (data.length < 2) {
+            // not enough data for graph
             return;
         }
 
@@ -125,16 +116,28 @@ export default class SensorGraphView extends React.Component<SensorGraphViewProp
             .attr('d', line);
     }
 
-    public render():JSX.Element {
-        
+    public render():JSX.Element {        
         return <div className="sensor-graph-view"            
-            ref={d => {if (d) {this.graphDiv = d}}}
-            >
-            <p className="sensor-graph-view_header">{this.props.sensorName}<span ref={s => {if (s) {this.unitSpan = s;}}}></span></p>
-            <svg width='100%'
-                 height='100%'
-                 ref={s => {if (s) {this.svg = s}} }/>
-            </div>
+                    ref={d => {
+                            if (d) {
+                                this.graphDiv = d
+                            }
+                        }}
+                    >
+                <p className="sensor-graph-view_header">
+                    {this.props.sensorName}
+                    <span ref={s => {
+                            if (s) {
+                                this.unitSpan = s;
+                            }
+                        }}>
+                    </span>
+                </p>
+                <svg width='100%'
+                     height='100%'
+                     ref={s => {if (s) {this.svg = s}} }
+                />
+            </div>;
     }
 
     componentDidUpdate() {        

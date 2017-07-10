@@ -8,11 +8,15 @@ type SensorMapViewProps = {
     sensorName: string
 }
 
+/**
+ * Component for displaying location measurements on the map.
+ */
 export default class SensorMapView extends React.Component<SensorMapViewProps> {
     private mapDiv: HTMLDivElement | null;
     private map: any = null;
     private marker: any = null;
     private polyline: any = null;
+
     constructor(props: SensorMapViewProps) {
         super(props);
         this.onSensorData = _.throttle(this.onSensorData.bind(this), 300);
@@ -40,11 +44,10 @@ export default class SensorMapView extends React.Component<SensorMapViewProps> {
     }
 
     public render():JSX.Element {
-        return <div 
-            className='sensor-map-view'>
-            <p className='sensor-map-view_header'>{this.props.sensorName}</p>            
-            <div className='sensor-map-view_map' ref={d => this.mapDiv = d}></div>            
-        </div>
+        return <div className='sensor-map-view'>
+                    <p className='sensor-map-view_header'>{this.props.sensorName}</p>            
+                    <div className='sensor-map-view_map' ref={d => this.mapDiv = d}></div>            
+            </div>
     }
 
     updateMap() {
@@ -53,6 +56,7 @@ export default class SensorMapView extends React.Component<SensorMapViewProps> {
         }
         let data = this.props.sensorData.getLastValues(this.props.sensorName, 100);
         if (data.length == 0) {
+            // nothing to display
             return;
         }
         
@@ -61,6 +65,7 @@ export default class SensorMapView extends React.Component<SensorMapViewProps> {
 
         let center = {lat: lp[0], lng: lp[1]};
 
+        // init map
         if (this.map == null) {
             this.map = new window.google.maps.Map(this.mapDiv, {
                 zoom: 7,
@@ -69,6 +74,7 @@ export default class SensorMapView extends React.Component<SensorMapViewProps> {
             });
         } 
 
+        // move marker
         if (this.marker == null) {
             this.marker = new window.google.maps.Marker({
             position: center,
@@ -78,6 +84,7 @@ export default class SensorMapView extends React.Component<SensorMapViewProps> {
             this.marker.setPosition(center);
         }
 
+        // draw path through last 100 locations
         var path = []
         for (let lps of data) {
             let lp = lps.last;
